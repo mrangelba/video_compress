@@ -8,15 +8,9 @@ import 'package:flutter/services.dart';
 import 'media_info.dart';
 
 class VideoCompress {
-  static VideoCompress _instance;
   final _channel = MethodChannel('video_compress');
 
-  factory VideoCompress() {
-    if (_instance == null) _instance = VideoCompress._();
-    return _instance;
-  }
-
-  VideoCompress._() {
+  VideoCompress() {
     _channel.setMethodCallHandler(_progresCallback);
   }
 
@@ -167,6 +161,10 @@ class VideoCompress {
   Future<bool> deleteAllCache() async {
     return await _invoke<bool>('deleteAllCache');
   }
+
+  void dispose() {
+    compressProgress$.dispose();
+  }
 }
 
 class ObservableBuilder<T> {
@@ -182,7 +180,11 @@ class ObservableBuilder<T> {
     notSubscribed = false;
     _observable.stream.listen(onData,
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);
-    return Subscription(_observable.close);
+    return Subscription(() => _observable.close());
+  }
+
+  void dispose() {
+    _observable?.close();
   }
 }
 

@@ -65,22 +65,26 @@ class VideoCompress {
   /// getFileThumbnail return [Future<File>]
   /// quality can be controlled by [quality] from 1 to 100,
   /// select the position unit in the video by [position] is seconds
-  Future<File> getFileThumbnail(
+  Future<File?> getFileThumbnail(
     String path, {
     int quality = 100,
     int position = -1,
   }) async {
     assert(quality > 1 || quality < 100);
 
-    final filePath = await (_invoke<String>('getFileThumbnail', {
+    final filePath = await _invoke<String>('getFileThumbnail', {
       'path': path,
       'quality': quality,
       'position': position,
-    }) as FutureOr<String>);
+    });
 
-    final file = File(filePath);
+    if (filePath != null) {
+      final file = File(filePath);
 
-    return file;
+      return file;
+    }
+
+    return null;
   }
 
   /// get media information from [path]
@@ -93,9 +97,9 @@ class VideoCompress {
   /// debugPrint(info.toJson());
   /// ```
   Future<MediaInfo> getMediaInfo(String path) async {
-    final jsonStr = await (_invoke<String>('getMediaInfo', {'path': path})
-        as FutureOr<String>);
-    final jsonMap = json.decode(jsonStr);
+    final jsonStr = await _invoke<String>('getMediaInfo', {'path': path});
+    final jsonMap = json.decode(jsonStr ?? '');
+
     return MediaInfo.fromJson(jsonMap);
   }
 
@@ -133,7 +137,7 @@ class VideoCompress {
       debugPrint('''VideoCompress: You can try to subscribe to the 
       compressProgress\$ stream to know the compressing state.''');
     }
-    final jsonStr = await (_invoke<String>('compressVideo', {
+    final jsonStr = await _invoke<String>('compressVideo', {
       'path': path,
       'quality': quality.index,
       'deleteOrigin': deleteOrigin,
@@ -141,9 +145,9 @@ class VideoCompress {
       'duration': duration,
       'includeAudio': includeAudio,
       'frameRate': frameRate,
-    }) as FutureOr<String>);
+    });
     _isCompressing = false;
-    final jsonMap = json.decode(jsonStr);
+    final jsonMap = json.decode(jsonStr ?? '');
     return MediaInfo.fromJson(jsonMap);
   }
 
